@@ -1,0 +1,12 @@
+name: SimpleReserve
+main: com.evosysdev.bukkit.taylorjb.simplereserve.SimpleReserve
+version: 0.3.0
+website: http://dev.bukkit.org/server-mods/simplereserve/
+author: taylorjb
+permissions:
+    simplereserve.enter.full:
+        description: User may join past server player cap
+    simplereserve.enter.kick:
+        description: User may join full server by kicking another player
+    simplereserve.kick.prevent:
+        description: User cannot be kicked to make room for a joining player

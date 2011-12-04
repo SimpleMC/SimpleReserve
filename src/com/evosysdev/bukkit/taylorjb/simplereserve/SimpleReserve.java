@@ -20,7 +20,8 @@ public class SimpleReserve extends JavaPlugin
     {
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvent(Event.Type.PLAYER_LOGIN, playerListener, Priority.Highest, this);
-
+        pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Highest, this);
+        
         try
         {
             reserveMethod = ReserveType.valueOf(getConfig().getString("reserve.type").toUpperCase());

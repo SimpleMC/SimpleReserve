@@ -2,36 +2,52 @@ package com.evosysdev.bukkit.taylorjb.simplereserve;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
 
-public class SimpleReservePlayerListener extends PlayerListener
+public class SimpleReserveListener implements Listener
 {
     private SimpleReserve plugin; // plugin using the listener
     private Map<String, Long> denies; // cache of people to deny
-    
+    private String kickMessage, // message to send player when kicked to make room
+            fullMessage; // message to send player who can't join full server
+            
     /**
      * Initialize the player listener
      * 
+     * @param kickMessage
+     *            message to send player when kicked to make room
+     * @param fullMessage
+     *            message to send player who can't join full server
      * @param plugin
      *            plugin using the listener
      */
-    public SimpleReservePlayerListener(SimpleReserve plugin)
+    public SimpleReserveListener(String kickMessage, String fullMessage, SimpleReserve plugin)
     {
+        this.kickMessage = kickMessage;
+        this.fullMessage = fullMessage;
+        
         this.plugin = plugin;
         denies = new HashMap<String, Long>();
+        
+        // register events
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        
+        plugin.getLogger().finer("Created SimpleReserveListener with kickMessage: \"" + kickMessage + "\" and fullMessage: \""+ fullMessage + "\"");
     }
     
-    @Override
     /**
-     * If server's full, check if player has a reserve slot, let through if they do
-     * @param event the login event
+     * If server is full, let event through if player has not been denied yet
+     * 
+     * @param event
+     *            the login event
      */
+    @EventHandler
     public void onPlayerLogin(PlayerLoginEvent event)
     {
         // if we don't know we should be denying a login when server is full,
@@ -47,7 +63,13 @@ public class SimpleReservePlayerListener extends PlayerListener
         }
     }
     
-    @Override
+    /**
+     * If server's full, check if player has a reserve slot, let through if they do
+     * 
+     * @param event
+     *            the login event
+     */
+    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event)
     {
         // is the server full?
@@ -60,7 +82,7 @@ public class SimpleReservePlayerListener extends PlayerListener
             {
                 if (plugin.getReserveMethod() == SimpleReserve.ReserveType.BOTH || plugin.getReserveMethod() == SimpleReserve.ReserveType.FULL)
                 {
-                    Logger.getLogger("minecraft").info("Allowed player " + event.getPlayer().getDisplayName() + " to join full server!");
+                    plugin.getLogger().info("Allowed player " + event.getPlayer().getDisplayName() + " to join full server!");
                 }
                 else
                 {
@@ -70,10 +92,8 @@ public class SimpleReservePlayerListener extends PlayerListener
                         // player does not have kick prevent power
                         if (!p.hasPermission("simplereserve.kick.prevent"))
                         {
-                            p.kickPlayer("Kicked to make room for reserved user!");
-                            Logger.getLogger("minecraft").info(
-                                    "Allowed player " + player.getDisplayName() + " to join full server by kicking player " + p.getDisplayName()
-                                            + "!");
+                            p.kickPlayer(kickMessage);
+                            plugin.getLogger().info("Allowed player " + player.getDisplayName() + " to join full server by kicking player " + p.getDisplayName() + "!");
                             return; // found and kicked a player, let the reserved player join, exit loop
                         }
                     }
@@ -86,8 +106,8 @@ public class SimpleReservePlayerListener extends PlayerListener
             else
             {
                 denies.put(player.getName(), System.currentTimeMillis());
-                player.kickPlayer("The server is full!");
-                Logger.getLogger("minecraft").info("Disconnecting player " + player.getDisplayName() + " because the server is full.");
+                player.kickPlayer(fullMessage);
+                plugin.getLogger().info("Disconnecting player " + player.getDisplayName() + " because the server is full.");
             }
         }
     }

@@ -4,14 +4,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class SimpleReserve extends JavaPlugin
 {
-    private ReserveType reserveMethod; // method to use for reserve slots
-    
     /**
      * set up the block listener and Permissions on enable
      */
     public void onEnable()
     {
         validateConfig();
+        
+        ReserveType reserveMethod;
         
         try
         {
@@ -25,8 +25,12 @@ public class SimpleReserve extends JavaPlugin
             reserveMethod = ReserveType.valueOf(getConfig().getString("reserve.type").toUpperCase());
         }
         
-        new SimpleReserveListener(getConfig().getString("kick-message", "Kicked to make room for reserved user!"), getConfig().getString("full-message",
-                "The server is full!"), this);
+        new SimpleReserveListener(reserveMethod,
+                getConfig().getInt("reserve.full.cap", 5),
+                getConfig().getBoolean("reserve.full.reverttokick", false),
+                getConfig().getString("kick-message", "Kicked to make room for reserved user!"),
+                getConfig().getString("full-message", "The server is full!"),
+                this);
         
         getLogger().info(getDescription().getName() + " version " + getDescription().getVersion() + " enabled!");
     }
@@ -51,6 +55,18 @@ public class SimpleReserve extends JavaPlugin
             getConfig().set("reserve.type", "both");
             updated = true;
         }
+
+        if (!getConfig().contains("reserve.full.cap"))
+        {
+            getConfig().set("reserve.full.cap", 5);
+            updated = true;
+        }
+        
+        if (!getConfig().contains("reserve.full.reverttokick"))
+        {
+            getConfig().set("reserve.full.reverttokick", false);
+            updated = true;
+        }
         
         if (!getConfig().contains("kick-message"))
         {
@@ -69,13 +85,24 @@ public class SimpleReserve extends JavaPlugin
         {
             // set header for information
             getConfig().options().header(
-                    "Config nodes:\n" + "\n" + "reserve.type: Type of reserve slots\n" + "    full,kick,both,none\n"
-                            + "kick-message: Message player will recieve when kicked to let reserve in\n"
-                            + "full-message: Message player will recieve when unable to join full server\n" + "\n" + "Reserve Types Overview:\n"
-                            + "-----------------------\n" + "\n" + "Full: Allow reserves to log on past the server limit\n"
-                            + "Kick: Attempt to kick a player without kick immunity to make room\n" + "Both: Both methods of reservation based on Permission\n"
-                            + "    NOTE: If a player has permission for kick and full, full applies\n"
-                            + "None: No reservation. Effectively disables mod without needing to remove\n" + "");
+                    "Config nodes:\n" +
+                    "\n" +
+                    "reserve.type(enum/string): Type of reserve slots, options:\n" +
+                    "    full,kick,both,none\n" +
+                    "reserve.full.cap(int): Max players allowed over capacity if using 'full' method, 0 for no max\n" +
+                    "reserve.full.reverttokick(boolean): Should we fall back to kick method if we reach max over capacity using full?\n" +
+                    "kick-message(string): Message player will recieve when kicked to let reserve in\n" + 
+                    "full-message(string): Message player will recieve when unable to join full server\n" +
+                    "\n" +
+                    "Reserve Types Overview:\n" +
+                    "-----------------------\n" +
+                    "\n" +
+                    "Full: Allow reserves to log on past the server limit\n" +
+                    "Kick: Attempt to kick a player without kick immunity to make room\n" +
+                    "Both: Both methods of reservation based on Permission\n" +
+                    "    NOTE: If a player has permission for kick and full, full applies\n" +
+                    "None: No reservation. Effectively disables mod without needing to remove\n" +
+                    "");
             
             // save
             saveConfig();
@@ -89,26 +116,5 @@ public class SimpleReserve extends JavaPlugin
     public void onDisable()
     {
         System.out.println("SimpleReserve disabled!");
-    }
-    
-    /**
-     * Get the method we are using for reserve slots
-     * 
-     * @return reserve method
-     */
-    public ReserveType getReserveMethod()
-    {
-        return reserveMethod;
-    }
-    
-    /**
-     * enum for type of reserve we are using(kick, full bypass, or either(both))
-     * 
-     * @author TJ
-     * 
-     */
-    public enum ReserveType
-    {
-        KICK, FULL, BOTH, NONE
     }
 }

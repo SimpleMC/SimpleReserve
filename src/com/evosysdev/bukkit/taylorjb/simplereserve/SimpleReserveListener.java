@@ -14,6 +14,10 @@ public class SimpleReserveListener implements Listener
 {
     private SimpleReserve plugin; // plugin using the listener
     private Map<String, Long> denies; // cache of people to deny
+    
+    private ReserveType reserveMethod; // method to use for reserve slots
+    private int capOver; // capacity allowed of server capacity
+    private boolean revertToKick; // in event of reaching cap over cap, should full fall back on kicking?
     private String kickMessage, // message to send player when kicked to make room
             fullMessage; // message to send player who can't join full server
             
@@ -27,8 +31,11 @@ public class SimpleReserveListener implements Listener
      * @param plugin
      *            plugin using the listener
      */
-    public SimpleReserveListener(String kickMessage, String fullMessage, SimpleReserve plugin)
+    public SimpleReserveListener(ReserveType reserveMethod, int capOver, boolean revertToKick, String kickMessage, String fullMessage, SimpleReserve plugin)
     {
+        this.reserveMethod = reserveMethod;
+        this.capOver = capOver;
+        this.revertToKick = revertToKick;
         this.kickMessage = kickMessage;
         this.fullMessage = fullMessage;
         
@@ -52,7 +59,7 @@ public class SimpleReserveListener implements Listener
     {
         // if we don't know we should be denying a login when server is full,
         // we need to allow it though to check it
-        if (event.getResult() == Result.KICK_FULL && denies.get(event.getPlayer().getName()) == null)
+        if (event.getResult() == Result.KICK_FULL && denies.get(event.getPlayer().getName()) == null && !(serverTooFull() && !revertToKick))
         {
             event.allow();
         }
@@ -62,7 +69,7 @@ public class SimpleReserveListener implements Listener
             denies.remove(event.getPlayer().getName());
         }
     }
-    
+
     /**
      * If server's full, check if player has a reserve slot, let through if they do
      * 
@@ -80,7 +87,7 @@ public class SimpleReserveListener implements Listener
             // check if player has permission to join given the reserve method
             if (canJoin(player))
             {
-                if (plugin.getReserveMethod() == SimpleReserve.ReserveType.BOTH || plugin.getReserveMethod() == SimpleReserve.ReserveType.FULL)
+                if (!serverTooFull() && (reserveMethod == ReserveType.BOTH || reserveMethod == ReserveType.FULL))
                 {
                     plugin.getLogger().info("Allowed player " + event.getPlayer().getDisplayName() + " to join full server!");
                 }
@@ -112,11 +119,19 @@ public class SimpleReserveListener implements Listener
         }
     }
     
+    /**
+     * @return if server is more full than cap over cap
+     */
+    private boolean serverTooFull()
+    {
+        return capOver != 0 && (plugin.getServer().getOnlinePlayers().length >= plugin.getServer().getMaxPlayers() + capOver);
+    }
+    
     public boolean canJoin(Player p)
     {
-        return ((plugin.getReserveMethod() == SimpleReserve.ReserveType.BOTH || plugin.getReserveMethod() == SimpleReserve.ReserveType.FULL) && p
+        return ((reserveMethod == ReserveType.BOTH || reserveMethod == ReserveType.FULL) && p
                 .hasPermission("simplereserve.enter.full"))
-                || ((plugin.getReserveMethod() == SimpleReserve.ReserveType.BOTH || plugin.getReserveMethod() == SimpleReserve.ReserveType.KICK) && p
+                || ((reserveMethod == ReserveType.BOTH || reserveMethod == ReserveType.KICK) && p
                         .hasPermission("simplereserve.enter.kick"));
     }
 }

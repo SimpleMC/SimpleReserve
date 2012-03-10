@@ -13,7 +13,6 @@ import org.bukkit.event.player.PlayerLoginEvent.Result;
 public class SimpleReserveListener implements Listener
 {
     private SimpleReserve plugin; // plugin using the listener
-    private Map<String, Long> denies; // cache of people to deny
     
     private ReserveType reserveMethod; // method to use for reserve slots
     private int capOver; // capacity allowed of server capacity
@@ -40,7 +39,6 @@ public class SimpleReserveListener implements Listener
         this.fullMessage = fullMessage;
         
         this.plugin = plugin;
-        denies = new HashMap<String, Long>();
         
         // register events
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -56,28 +54,6 @@ public class SimpleReserveListener implements Listener
      */
     @EventHandler
     public void onPlayerLogin(PlayerLoginEvent event)
-    {
-        // if we don't know we should be denying a login when server is full,
-        // we need to allow it though to check it
-        if (event.getResult() == Result.KICK_FULL && denies.get(event.getPlayer().getName()) == null && !(serverTooFull() && !revertToKick))
-        {
-            event.allow();
-        }
-        // if name is in denies and it has been for 5 minutes, remove it from denies in case permissions have changed and need to recheck
-        else if (denies.get(event.getPlayer().getName()) != null && (System.currentTimeMillis() - denies.get(event.getPlayer().getName()) > 300000))
-        {
-            denies.remove(event.getPlayer().getName());
-        }
-    }
-
-    /**
-     * If server's full, check if player has a reserve slot, let through if they do
-     * 
-     * @param event
-     *            the login event
-     */
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event)
     {
         // is the server full?
         if (plugin.getServer().getOnlinePlayers().length > plugin.getServer().getMaxPlayers())
@@ -106,15 +82,13 @@ public class SimpleReserveListener implements Listener
                     }
                     
                     // if we get here, no kickable player found...that would be unfortunate.
-                    player.kickPlayer("Unable to find any kickable players to open spots!");
+                    event.disallow(Result.KICK_FULL, "Unable to find any kickable players to open spots!");
                 }
             }
-            // if player cannot join, add him to the list so we know next time and don't need to allow through login
+            // player cannot join
             else
             {
-                denies.put(player.getName(), System.currentTimeMillis());
-                player.kickPlayer(fullMessage);
-                plugin.getLogger().info("Disconnecting player " + player.getDisplayName() + " because the server is full.");
+                event.disallow(Result.KICK_FULL, fullMessage);
             }
         }
     }

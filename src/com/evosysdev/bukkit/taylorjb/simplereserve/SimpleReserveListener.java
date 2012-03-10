@@ -1,12 +1,8 @@
 package com.evosysdev.bukkit.taylorjb.simplereserve;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
 
@@ -63,26 +59,18 @@ public class SimpleReserveListener implements Listener
             // check if player has permission to join given the reserve method
             if (canJoin(player))
             {
-                if (!serverTooFull() && (reserveMethod == ReserveType.BOTH || reserveMethod == ReserveType.FULL))
+                if (reserveMethod == ReserveType.BOTH || reserveMethod == ReserveType.FULL)
                 {
-                    plugin.getLogger().info("Allowed player " + event.getPlayer().getDisplayName() + " to join full server!");
+                    if (!serverTooFull())
+                        plugin.getLogger().info("Allowed player " + event.getPlayer().getDisplayName() + " to join full server!");
+                    else if (revertToKick)
+                        kickJoin(player, event);
+                    else
+                        event.disallow(Result.KICK_FULL, "All reserve slots full!");
                 }
                 else
                 {
-                    Player[] players = plugin.getServer().getOnlinePlayers();
-                    for (Player p : players)
-                    {
-                        // player does not have kick prevent power
-                        if (!p.hasPermission("simplereserve.kick.prevent"))
-                        {
-                            p.kickPlayer(kickMessage);
-                            plugin.getLogger().info("Allowed player " + player.getDisplayName() + " to join full server by kicking player " + p.getDisplayName() + "!");
-                            return; // found and kicked a player, let the reserved player join, exit loop
-                        }
-                    }
-                    
-                    // if we get here, no kickable player found...that would be unfortunate.
-                    event.disallow(Result.KICK_FULL, "Unable to find any kickable players to open spots!");
+                    kickJoin(player, event);
                 }
             }
             // player cannot join
@@ -91,6 +79,24 @@ public class SimpleReserveListener implements Listener
                 event.disallow(Result.KICK_FULL, fullMessage);
             }
         }
+    }
+    
+    private void kickJoin(Player player, PlayerLoginEvent event)
+    {
+        Player[] players = plugin.getServer().getOnlinePlayers();
+        for (Player p : players)
+        {
+            // player does not have kick prevent power
+            if (!p.hasPermission("simplereserve.kick.prevent"))
+            {
+                p.kickPlayer(kickMessage);
+                plugin.getLogger().info("Allowed player " + player.getDisplayName() + " to join full server by kicking player " + p.getDisplayName() + "!");
+                return; // found and kicked a player, let the reserved player join, exit loop
+            }
+        }
+        
+        // if we get here, no kickable player found...that would be unfortunate.
+        event.disallow(Result.KICK_FULL, "Unable to find any kickable players to open spots!");
     }
     
     /**

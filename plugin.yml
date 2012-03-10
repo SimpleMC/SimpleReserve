@@ -1,6 +1,6 @@
 name: SimpleReserve
 main: com.evosysdev.bukkit.taylorjb.simplereserve.SimpleReserve
-version: 0.4.1
+version: 0.4.2
 website: http://dev.bukkit.org/server-mods/simplereserve/
 author: taylorjb
 permissions:

@@ -39,7 +39,7 @@ public class SimpleReserveListener implements Listener
         // register events
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         
-        plugin.getLogger().finer("Created SimpleReserveListener with kickMessage: \"" + kickMessage + "\" and fullMessage: \""+ fullMessage + "\"");
+        plugin.getLogger().finer("Created SimpleReserveListener with kickMessage: \"" + kickMessage + "\" and fullMessage: \"" + fullMessage + "\"");
     }
     
     /**
@@ -52,26 +52,24 @@ public class SimpleReserveListener implements Listener
     public void onPlayerLogin(PlayerLoginEvent event)
     {
         // is the server full?
-        if (plugin.getServer().getOnlinePlayers().length > plugin.getServer().getMaxPlayers())
+        if (event.getResult() == Result.KICK_FULL)
         {
             Player player = event.getPlayer(); // player doing event
-            
-            // check if player has permission to join given the reserve method
-            if (canJoin(player))
+            if ((reserveMethod == ReserveType.BOTH || reserveMethod == ReserveType.FULL) && player.hasPermission("simplereserve.enter.full"))
             {
-                if (reserveMethod == ReserveType.BOTH || reserveMethod == ReserveType.FULL)
+                if (!serverTooFull())
                 {
-                    if (!serverTooFull())
-                        plugin.getLogger().info("Allowed player " + event.getPlayer().getDisplayName() + " to join full server!");
-                    else if (revertToKick)
-                        kickJoin(player, event);
-                    else
-                        event.disallow(Result.KICK_FULL, "All reserve slots full!");
+                    event.allow();
+                    plugin.getLogger().info("Allowed player " + event.getPlayer().getDisplayName() + " to join full server!");
                 }
-                else
-                {
+                else if (revertToKick)
                     kickJoin(player, event);
-                }
+                else
+                    event.disallow(Result.KICK_FULL, "All reserve slots full!");
+            }
+            else if ((reserveMethod == ReserveType.BOTH || reserveMethod == ReserveType.KICK) && player.hasPermission("simplereserve.enter.kick"))
+            {
+                kickJoin(player, event);
             }
             // player cannot join
             else
@@ -90,6 +88,7 @@ public class SimpleReserveListener implements Listener
             if (!p.hasPermission("simplereserve.kick.prevent"))
             {
                 p.kickPlayer(kickMessage);
+                event.allow();
                 plugin.getLogger().info("Allowed player " + player.getDisplayName() + " to join full server by kicking player " + p.getDisplayName() + "!");
                 return; // found and kicked a player, let the reserved player join, exit loop
             }
@@ -105,13 +104,5 @@ public class SimpleReserveListener implements Listener
     private boolean serverTooFull()
     {
         return capOver != 0 && (plugin.getServer().getOnlinePlayers().length >= plugin.getServer().getMaxPlayers() + capOver);
-    }
-    
-    public boolean canJoin(Player p)
-    {
-        return ((reserveMethod == ReserveType.BOTH || reserveMethod == ReserveType.FULL) && p
-                .hasPermission("simplereserve.enter.full"))
-                || ((reserveMethod == ReserveType.BOTH || reserveMethod == ReserveType.KICK) && p
-                        .hasPermission("simplereserve.enter.kick"));
     }
 }

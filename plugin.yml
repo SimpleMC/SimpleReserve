@@ -1,9 +1,19 @@
 name: SimpleReserve
 main: com.evosysdev.bukkit.taylorjb.simplereserve.SimpleReserve
-version: 0.4.2
+version: 0.4.3
 website: http://dev.bukkit.org/server-mods/simplereserve/
 author: taylorjb
 permissions:
+    simplereserve.*:
+        description: All SimpleReserve permissions
+        children:
+            simplereserve.enter: true
+            simplereserve.kick.prevent: true
+    simplereserve.enter:
+        description: Enter full and kick permissions
+        children:
+            simplereserve.enter.full: true
+            simplereserve.enter.kick: true
     simplereserve.enter.full:
         description: User may join past server player cap
     simplereserve.enter.kick:

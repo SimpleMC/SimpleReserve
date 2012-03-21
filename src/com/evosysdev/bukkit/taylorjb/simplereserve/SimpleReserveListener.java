@@ -2,6 +2,7 @@ package com.evosysdev.bukkit.taylorjb.simplereserve;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
@@ -48,7 +49,7 @@ public class SimpleReserveListener implements Listener
      * @param event
      *            the login event
      */
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerLogin(PlayerLoginEvent event)
     {
         // is the server full?

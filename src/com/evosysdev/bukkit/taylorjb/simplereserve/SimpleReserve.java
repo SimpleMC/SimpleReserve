@@ -1,7 +1,16 @@
 package com.evosysdev.bukkit.taylorjb.simplereserve;
 
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+/**
+ * Simple reserve slot plugin the Bukkit API
+ * @author TJ
+ *
+ */
 public class SimpleReserve extends JavaPlugin
 {
     /**
@@ -9,30 +18,82 @@ public class SimpleReserve extends JavaPlugin
      */
     public void onEnable()
     {
+    	loadConfig();
+        
+        getLogger().info(getDescription().getName() + " version " + getDescription().getVersion() + " enabled!");
+    }
+    
+    /**
+     * Load the config options from config
+     */
+    private void loadConfig()
+    {
+    	// ensure config file/options valid
         validateConfig();
         
-        ReserveType reserveMethod;
+        // load
+        FileConfiguration config = getConfig(); // our config
+        ReserveType reserveMethod; // type of reservations
         
         try
         {
-            reserveMethod = ReserveType.valueOf(getConfig().getString("reserve.type").toUpperCase());
+            reserveMethod = ReserveType.valueOf(config.getString("reserve.type").toUpperCase());
         }
         catch (IllegalArgumentException iae)
         { // config not set right(enum can't be valueOf'd)
-            getConfig().set("reserve.type", "both"); // config not set right, default to both
+        	config.set("reserve.type", "both"); // config not set right, default to both
             saveConfig();
             
-            reserveMethod = ReserveType.valueOf(getConfig().getString("reserve.type").toUpperCase());
+            reserveMethod = ReserveType.valueOf(config.getString("reserve.type").toUpperCase());
         }
         
         new SimpleReserveListener(reserveMethod,
-                getConfig().getInt("reserve.full.cap", 5),
-                getConfig().getBoolean("reserve.full.reverttokick", false),
-                getConfig().getString("kick-message", "Kicked to make room for reserved user!"),
-                getConfig().getString("full-message", "The server is full!"),
+        		config.getInt("reserve.full.cap", 5),
+                config.getBoolean("reserve.full.reverttokick", false),
+                config.getString("kick-message", "Kicked to make room for reserved user!"),
+                config.getString("full-message", "The server is full!"),
                 this);
+    }
+    
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
+    {
+        if (command.getName().equalsIgnoreCase("simplereserve"))
+        {
+            if (sender.hasPermission("simplereserve"))
+            {
+                // reload command
+                if (args.length > 0 && (args[0].equalsIgnoreCase("reload") || args[0].equalsIgnoreCase("r")))
+                {
+                    if (sender.hasPermission("simplereserve.reload"))
+                    {
+                        reloadConfig(); // reload file
+                        loadConfig(); // read config
+                        
+                        getLogger().fine("Config reloaded.");
+                        sender.sendMessage("SimpleReserve config reloaded");
+                    }
+                    else
+                    {
+                        sender.sendMessage(ChatColor.RED + "You do not have permission to do that!");
+                    }
+                }
+                // help command
+                else
+                {
+                    sender.sendMessage(ChatColor.AQUA + "/" + getCommand("simplereserve").getName() + ChatColor.WHITE + " | " + ChatColor.BLUE
+                            + getCommand("simplereserve").getDescription());
+                    sender.sendMessage("Usage: " + ChatColor.GRAY + getCommand("simplereserve").getUsage());
+                }
+            }
+            else
+            {
+                sender.sendMessage(ChatColor.RED + "You do not have permission to do that!");
+            }
+            return true;
+        }
         
-        getLogger().info(getDescription().getName() + " version " + getDescription().getVersion() + " enabled!");
+        return false;
     }
     
     /**

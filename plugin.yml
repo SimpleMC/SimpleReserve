@@ -1,14 +1,17 @@
 name: SimpleReserve
 main: com.evosysdev.bukkit.taylorjb.simplereserve.SimpleReserve
-version: 0.4.4
+version: 0.5.0
 website: http://dev.bukkit.org/server-mods/simplereserve/
 author: taylorjb
 permissions:
+    simplereserve:
+        description: Gives access to SimpleReserve help command
     simplereserve.*:
         description: All SimpleReserve permissions
         children:
             simplereserve.enter: true
             simplereserve.kick.prevent: true
+            simplereserve.reload: true
     simplereserve.enter:
         description: Enter full and kick permissions
         children:
@@ -20,3 +23,16 @@ permissions:
         description: User may join full server by kicking another player
     simplereserve.kick.prevent:
         description: User cannot be kicked to make room for a joining player
+    simplereserve.reload:
+        description: Gives access to SimpleReserve reload command
+        children:
+            simplereserve: true
+commands:
+    simplereserve:
+        aliases:
+            - sr
+        description: SimpleReserve command for help or config reload
+        usage: |
+            /<command> | Displays SimpleReserve help
+            /<command> r | Reloads SimpleReserve config
+            /<command> reload | Reloads SimpleReserve config

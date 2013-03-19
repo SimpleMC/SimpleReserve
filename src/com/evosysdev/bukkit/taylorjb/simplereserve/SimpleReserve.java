@@ -8,8 +8,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * Simple reserve slot plugin the Bukkit API
+ * 
  * @author TJ
- *
+ * 
  */
 public class SimpleReserve extends JavaPlugin
 {
@@ -18,7 +19,7 @@ public class SimpleReserve extends JavaPlugin
      */
     public void onEnable()
     {
-    	loadConfig();
+        loadConfig();
         
         getLogger().info(getDescription().getName() + " version " + getDescription().getVersion() + " enabled!");
     }
@@ -28,7 +29,7 @@ public class SimpleReserve extends JavaPlugin
      */
     private void loadConfig()
     {
-    	// ensure config file/options valid
+        // ensure config file/options valid
         validateConfig();
         
         // load
@@ -39,16 +40,18 @@ public class SimpleReserve extends JavaPlugin
         {
             reserveMethod = ReserveType.valueOf(config.getString("reserve.type").toUpperCase());
         }
+        // config not set right(enum can't be valueOf'd)
         catch (IllegalArgumentException iae)
-        { // config not set right(enum can't be valueOf'd)
-        	config.set("reserve.type", "both"); // config not set right, default to both
+        {
+            // config not set right, default to both
+            config.set("reserve.type", "both");
             saveConfig();
             
             reserveMethod = ReserveType.valueOf(config.getString("reserve.type").toUpperCase());
         }
         
         new SimpleReserveListener(reserveMethod,
-        		config.getInt("reserve.full.cap", 5),
+                config.getInt("reserve.full.cap", 5),
                 config.getBoolean("reserve.full.reverttokick", false),
                 config.getString("kick-message", "Kicked to make room for reserved user!"),
                 config.getString("full-message", "The server is full!"),
@@ -116,7 +119,7 @@ public class SimpleReserve extends JavaPlugin
             getConfig().set("reserve.type", "both");
             updated = true;
         }
-
+        
         if (!getConfig().contains("reserve.full.cap"))
         {
             getConfig().set("reserve.full.cap", 5);
@@ -147,23 +150,23 @@ public class SimpleReserve extends JavaPlugin
             // set header for information
             getConfig().options().header(
                     "Config nodes:\n" +
-                    "\n" +
-                    "reserve.type(enum/string): Type of reserve slots, options:\n" +
-                    "    full,kick,both,none\n" +
-                    "reserve.full.cap(int): Max players allowed over capacity if using 'full' method, 0 for no max\n" +
-                    "reserve.full.reverttokick(boolean): Should we fall back to kick method if we reach max over capacity using full?\n" +
-                    "kick-message(string): Message player will recieve when kicked to let reserve in\n" + 
-                    "full-message(string): Message player will recieve when unable to join full server\n" +
-                    "\n" +
-                    "Reserve Types Overview:\n" +
-                    "-----------------------\n" +
-                    "\n" +
-                    "Full: Allow reserves to log on past the server limit\n" +
-                    "Kick: Attempt to kick a player without kick immunity to make room\n" +
-                    "Both: Both methods of reservation based on Permission\n" +
-                    "    NOTE: If a player has permission for kick and full, full applies\n" +
-                    "None: No reservation. Effectively disables mod without needing to remove\n" +
-                    "");
+                            "\n" +
+                            "reserve.type(enum/string): Type of reserve slots, options:\n" +
+                            "    full,kick,both,none\n" +
+                            "reserve.full.cap(int): Max players allowed over capacity if using 'full' method, 0 for no max\n" +
+                            "reserve.full.reverttokick(boolean): Should we fall back to kick method if we reach max over capacity using full?\n" +
+                            "kick-message(string): Message player will recieve when kicked to let reserve in\n" +
+                            "full-message(string): Message player will recieve when unable to join full server\n" +
+                            "\n" +
+                            "Reserve Types Overview:\n" +
+                            "-----------------------\n" +
+                            "\n" +
+                            "Full: Allow reserves to log on past the server limit\n" +
+                            "Kick: Attempt to kick a player without kick immunity to make room\n" +
+                            "Both: Both methods of reservation based on Permission\n" +
+                            "    NOTE: If a player has permission for kick and full, full applies\n" +
+                            "None: No reservation. Effectively disables mod without needing to remove\n" +
+                            "");
             
             // save
             saveConfig();

@@ -23,7 +23,7 @@ public class SimpleReserve extends JavaPlugin
         
         getLogger().info(getDescription().getName() + " version " + getDescription().getVersion() + " enabled!");
     }
-    
+
     /**
      * Load the config options from config
      */
@@ -46,18 +46,20 @@ public class SimpleReserve extends JavaPlugin
             // config not set right, default to both
             config.set("reserve.type", "both");
             saveConfig();
-            
+            getLogger().info(getDescription().getName() + " config file updated, please check settings!");
+
             reserveMethod = ReserveType.valueOf(config.getString("reserve.type").toUpperCase());
         }
-        
+
         new SimpleReserveListener(reserveMethod,
                 config.getInt("reserve.full.cap", 5),
                 config.getBoolean("reserve.full.reverttokick", false),
                 config.getString("kick-message", "Kicked to make room for reserved user!"),
                 config.getString("full-message", "The server is full!"),
+                config.getString("reserve-full-message", "All reserve slots are full!"),
                 this);
     }
-    
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
@@ -72,7 +74,7 @@ public class SimpleReserve extends JavaPlugin
                     {
                         reloadConfig(); // reload file
                         loadConfig(); // read config
-                        
+
                         getLogger().fine("Config reloaded.");
                         sender.sendMessage("SimpleReserve config reloaded");
                     }
@@ -84,7 +86,8 @@ public class SimpleReserve extends JavaPlugin
                 // help command
                 else
                 {
-                    sender.sendMessage(ChatColor.AQUA + "/" + getCommand("simplereserve").getName() + ChatColor.WHITE + " | " + ChatColor.BLUE
+                    sender.sendMessage(ChatColor.AQUA + "/" + getCommand("simplereserve").getName() + ChatColor.WHITE
+                            + " | " + ChatColor.BLUE
                             + getCommand("simplereserve").getDescription());
                     sender.sendMessage("Usage: " + ChatColor.GRAY + getCommand("simplereserve").getUsage());
                 }
@@ -95,10 +98,10 @@ public class SimpleReserve extends JavaPlugin
             }
             return true;
         }
-        
+
         return false;
     }
-    
+
     /**
      * Validate nodes, if they don't exist or are wrong, set them
      * and resave config
@@ -112,68 +115,86 @@ public class SimpleReserve extends JavaPlugin
     private void validateConfig()
     {
         boolean updated = false;
-        
+
         // settings
         if (!getConfig().contains("reserve.type"))
         {
             getConfig().set("reserve.type", "both");
             updated = true;
         }
-        
+
         if (!getConfig().contains("reserve.full.cap"))
         {
             getConfig().set("reserve.full.cap", 5);
             updated = true;
         }
-        
+
         if (!getConfig().contains("reserve.full.reverttokick"))
         {
             getConfig().set("reserve.full.reverttokick", false);
             updated = true;
         }
-        
+
         if (!getConfig().contains("kick-message"))
         {
             getConfig().set("kick-message", "Kicked to make room for reserved user!");
             updated = true;
         }
-        
+
         if (!getConfig().contains("full-message"))
         {
             getConfig().set("full-message", "The server is full!");
             updated = true;
         }
-        
+
+        if (!getConfig().contains("reserve-full-message"))
+        {
+            getConfig().set("reserve-full-message", "All reserve slots full!");
+            updated = true;
+        }
+
         // if nodes have been updated, update header then save
         if (updated)
         {
             // set header for information
-            getConfig().options().header(
-                    "Config nodes:\n" +
-                            "\n" +
-                            "reserve.type(enum/string): Type of reserve slots, options:\n" +
-                            "    full,kick,both,none\n" +
-                            "reserve.full.cap(int): Max players allowed over capacity if using 'full' method, 0 for no max\n" +
-                            "reserve.full.reverttokick(boolean): Should we fall back to kick method if we reach max over capacity using full?\n" +
-                            "kick-message(string): Message player will recieve when kicked to let reserve in\n" +
-                            "full-message(string): Message player will recieve when unable to join full server\n" +
-                            "\n" +
-                            "Reserve Types Overview:\n" +
-                            "-----------------------\n" +
-                            "\n" +
-                            "Full: Allow reserves to log on past the server limit\n" +
-                            "Kick: Attempt to kick a player without kick immunity to make room\n" +
-                            "Both: Both methods of reservation based on Permission\n" +
-                            "    NOTE: If a player has permission for kick and full, full applies\n" +
-                            "None: No reservation. Effectively disables mod without needing to remove\n" +
-                            "");
-            
+            getConfig()
+                    .options()
+                    .header(
+                            "Config nodes:\n"
+                                    +
+                                    "\n"
+                                    +
+                                    "reserve.type(enum/string): Type of reserve slots, options:\n"
+                                    +
+                                    "    full,kick,both,none\n"
+                                    +
+                                    "reserve.full.cap(int): Max players allowed over capacity if using 'full' method, 0 for no max\n"
+                                    +
+                                    "reserve.full.reverttokick(boolean): Should we fall back to kick method if we reach max over capacity using full?\n"
+                                    +
+                                    "kick-message(string): Message player will recieve when kicked to let reserve in\n"
+                                    +
+                                    "full-message(string): Message player will recieve when unable to join full server\n"
+                                    +
+                                    "reserve-full-message(string): Message player with reserve privileges will recieve when all reserve slots are full\n"
+                                    +
+                                    "\n" +
+                                    "Reserve Types Overview:\n" +
+                                    "-----------------------\n" +
+                                    "\n" +
+                                    "Full: Allow reserves to log on past the server limit\n" +
+                                    "Kick: Attempt to kick a player without kick immunity to make room\n" +
+                                    "Both: Both methods of reservation based on Permission\n" +
+                                    "    NOTE: If a player has permission for kick and full, full applies\n" +
+                                    "None: No reservation. Effectively disables mod without needing to remove\n" +
+                                    "");
+
             // save
             saveConfig();
             getLogger().info(getDescription().getName() + " config file updated, please check settings!");
         }
     }
-    
+
     /**
      * plugin disabled
      */

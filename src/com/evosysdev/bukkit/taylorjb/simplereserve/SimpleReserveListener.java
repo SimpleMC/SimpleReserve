@@ -16,13 +16,14 @@ import org.bukkit.event.player.PlayerLoginEvent.Result;
 public class SimpleReserveListener implements Listener
 {
     private SimpleReserve plugin; // plugin using the listener
-    
+
     private ReserveType reserveMethod; // method to use for reserve slots
     private int capOver; // capacity allowed of server capacity
     private boolean revertToKick; // in event of reaching cap over cap, should full fall back on kicking?
     private String kickMessage, // message to send player when kicked to make room
-            fullMessage; // message to send player who can't join full server
-            
+            fullMessage, // message to send player who can't join full server
+            reserveFullMessage; // message to send player who can join full but no available slots
+
     /**
      * Initialize the player listener
      * 
@@ -41,19 +42,19 @@ public class SimpleReserveListener implements Listener
      *            plugin using the listener
      */
     public SimpleReserveListener(ReserveType reserveMethod, int capOver, boolean revertToKick, String kickMessage,
-            String fullMessage, SimpleReserve plugin)
+            String fullMessage, String reserveFullMessage, SimpleReserve plugin)
     {
-        setSettings(reserveMethod, capOver, revertToKick, kickMessage, fullMessage);
+        setSettings(reserveMethod, capOver, revertToKick, kickMessage, fullMessage, reserveFullMessage);
         this.plugin = plugin;
-        
+
         // register events
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        
+
         plugin.getLogger().finer(
                 "Created SimpleReserveListener with kickMessage: \"" + kickMessage + "\" and fullMessage: \""
                         + fullMessage + "\"");
     }
-    
+
     /**
      * Set reserve listener settings
      * 
@@ -70,15 +71,16 @@ public class SimpleReserveListener implements Listener
      *            message to send player who can't join full server
      */
     public void setSettings(ReserveType reserveMethod, int capOver, boolean revertToKick, String kickMessage,
-            String fullMessage)
+            String fullMessage, String reserveFullMessage)
     {
         this.reserveMethod = reserveMethod;
         this.capOver = capOver;
         this.revertToKick = revertToKick;
         this.kickMessage = kickMessage;
         this.fullMessage = fullMessage;
+        this.reserveFullMessage = reserveFullMessage;
     }
-    
+
     /**
      * If server is full, let event through if player has not been denied yet
      * 
@@ -105,7 +107,7 @@ public class SimpleReserveListener implements Listener
                 }
                 else if (revertToKick)
                     kickJoin(player, event);
-                else event.disallow(Result.KICK_FULL, "All reserve slots full!");
+                else event.disallow(Result.KICK_FULL, reserveFullMessage);
             }
             // kick entry
             else if ((reserveMethod == ReserveType.BOTH || reserveMethod == ReserveType.KICK)
@@ -120,7 +122,7 @@ public class SimpleReserveListener implements Listener
             }
         }
     }
-    
+
     /**
      * Perform a join via kick method
      * 
@@ -145,11 +147,11 @@ public class SimpleReserveListener implements Listener
                 return; // found and kicked a player, let the reserved player join, exit loop
             }
         }
-        
+
         // if we get here, no kickable player found...that would be unfortunate.
         event.disallow(Result.KICK_FULL, "Unable to find any kickable players to open spots!");
     }
-    
+
     /**
      * @return if server is more full than cap over cap
      */

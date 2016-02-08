@@ -1,4 +1,4 @@
-package com.evosysdev.bukkit.taylorjb.simplereserve;
+package org.simplemc.simplereserve;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -9,7 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * Simple reserve slot plugin the Bukkit API
  * 
- * @author TJ
+ * @author Taylor Becker
  * 
  */
 public class SimpleReserve extends JavaPlugin

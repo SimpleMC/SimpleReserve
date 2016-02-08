@@ -1,4 +1,4 @@
-package com.evosysdev.bukkit.taylorjb.simplereserve;
+package org.simplemc.simplereserve;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -7,10 +7,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
 
+import java.util.Collection;
+
 /**
  * Listener for simple reserve plugin to handle logins
  * 
- * @author TJ
+ * @author Taylor Becker
  * 
  */
 public class SimpleReserveListener implements Listener
@@ -133,8 +135,7 @@ public class SimpleReserveListener implements Listener
      */
     private void kickJoin(Player player, PlayerLoginEvent event)
     {
-        Player[] players = plugin.getServer().getOnlinePlayers();
-        for (Player p : players)
+        for (Player p : plugin.getServer().getOnlinePlayers())
         {
             // player does not have kick prevent power
             if (!p.hasPermission("simplereserve.kick.prevent"))
@@ -158,6 +159,6 @@ public class SimpleReserveListener implements Listener
     private boolean serverTooFull()
     {
         return capOver != 0
-                && (plugin.getServer().getOnlinePlayers().length >= plugin.getServer().getMaxPlayers() + capOver);
+                && (plugin.getServer().getOnlinePlayers().size() >= plugin.getServer().getMaxPlayers() + capOver);
     }
 }

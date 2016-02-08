@@ -1,8 +1,8 @@
 name: SimpleReserve
-main: com.evosysdev.bukkit.taylorjb.simplereserve.SimpleReserve
+main: org.simplemc.simplereserve.SimpleReserve
 version: 0.6.0
 website: http://dev.bukkit.org/server-mods/simplereserve/
-author: taylorjb
+author: Taylor Becker
 permissions:
     simplereserve:
         description: Gives access to SimpleReserve help command

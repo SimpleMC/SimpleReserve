@@ -3,14 +3,14 @@ package org.simplemc.simplereserve;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * Simple reserve slot plugin the Bukkit API
- * 
+ *
  * @author Taylor Becker
- * 
  */
 public class SimpleReserve extends JavaPlugin
 {
@@ -20,7 +20,7 @@ public class SimpleReserve extends JavaPlugin
     public void onEnable()
     {
         loadConfig();
-        
+
         getLogger().info(getDescription().getName() + " version " + getDescription().getVersion() + " enabled!");
     }
 
@@ -31,29 +31,29 @@ public class SimpleReserve extends JavaPlugin
     {
         // ensure config file/options valid
         validateConfig();
-        
+
         // load
-        FileConfiguration config = getConfig(); // our config
+        ConfigurationSection config = getConfig().getConfigurationSection("reserve"); // our config
         ReserveType reserveMethod; // type of reservations
-        
+
         try
         {
-            reserveMethod = ReserveType.valueOf(config.getString("reserve.type").toUpperCase());
+            reserveMethod = ReserveType.valueOf(config.getString("type").toUpperCase());
         }
         // config not set right(enum can't be valueOf'd)
         catch (IllegalArgumentException iae)
         {
             // config not set right, default to both
-            config.set("reserve.type", "both");
+            config.set("type", "both");
             saveConfig();
             getLogger().info(getDescription().getName() + " config file updated, please check settings!");
 
-            reserveMethod = ReserveType.valueOf(config.getString("reserve.type").toUpperCase());
+            reserveMethod = ReserveType.valueOf(config.getString("type").toUpperCase());
         }
 
         new SimpleReserveListener(reserveMethod,
-                config.getInt("reserve.full.cap", 5),
-                config.getBoolean("reserve.full.reverttokick", false),
+                config.getInt("full.cap", 5),
+                config.getBoolean("full.reverttokick", false),
                 config.getString("kick-message", "Kicked to make room for reserved user!"),
                 config.getString("full-message", "The server is full!"),
                 config.getString("reserve-full-message", "All reserve slots are full!"),
@@ -103,53 +103,53 @@ public class SimpleReserve extends JavaPlugin
     }
 
     /**
-     * Validate nodes, if they don't exist or are wrong, set them
-     * and resave config
-     * 
-     * Unfortunately we cannot use defaults because contains will
-     * return true if node set in default OR config, and we want to
-     * update the config file in case it has changed from version to
-     * version.
-     * (thatssodumb.jpg, rage.mkv, etc etc)
+     * Validate nodes, if they don't exist or are wrong, set them and resave config
+     * <p>
+     * Unfortunately we cannot use defaults because there is no reasonable way of copying the defaults
+     * into the live config file while maintaining an updated header. We could use saveDefaultConfig
+     * but this doesn't help us when changing the config options and a config file already exists and
+     * copyDefaults destroys the header.
+     * </p>
      */
     private void validateConfig()
     {
         boolean updated = false;
+        FileConfiguration config = getConfig(); // our config
 
         // settings
-        if (!getConfig().contains("reserve.type"))
+        if (!config.contains("reserve.type"))
         {
-            getConfig().set("reserve.type", "both");
+            config.set("reserve.type", "both");
             updated = true;
         }
 
-        if (!getConfig().contains("reserve.full.cap"))
+        if (!config.contains("reserve.full.cap"))
         {
-            getConfig().set("reserve.full.cap", 5);
+            config.set("reserve.full.cap", 5);
             updated = true;
         }
 
-        if (!getConfig().contains("reserve.full.reverttokick"))
+        if (!config.contains("reserve.full.reverttokick"))
         {
-            getConfig().set("reserve.full.reverttokick", false);
+            config.set("reserve.full.reverttokick", false);
             updated = true;
         }
 
-        if (!getConfig().contains("kick-message"))
+        if (!config.contains("reserve.kick-message"))
         {
-            getConfig().set("kick-message", "Kicked to make room for reserved user!");
+            config.set("reserve.kick-message", "Kicked to make room for reserved user!");
             updated = true;
         }
 
-        if (!getConfig().contains("full-message"))
+        if (!config.contains("reserve.full-message"))
         {
-            getConfig().set("full-message", "The server is full!");
+            config.set("reserve.full-message", "The server is full!");
             updated = true;
         }
 
-        if (!getConfig().contains("reserve-full-message"))
+        if (!config.contains("reserve.reserve-full-message"))
         {
-            getConfig().set("reserve-full-message", "All reserve slots full!");
+            config.set("reserve.reserve-full-message", "All reserve slots full!");
             updated = true;
         }
 
@@ -157,7 +157,7 @@ public class SimpleReserve extends JavaPlugin
         if (updated)
         {
             // set header for information
-            getConfig()
+            config
                     .options()
                     .header(
                             "Config nodes:\n"

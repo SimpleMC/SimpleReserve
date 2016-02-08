@@ -11,9 +11,8 @@ import java.util.Collection;
 
 /**
  * Listener for simple reserve plugin to handle logins
- * 
+ *
  * @author Taylor Becker
- * 
  */
 public class SimpleReserveListener implements Listener
 {
@@ -28,23 +27,16 @@ public class SimpleReserveListener implements Listener
 
     /**
      * Initialize the player listener
-     * 
-     * @param reserveMethod
-     *            method to use for reserve slots
-     * @param capOver
-     *            capacity allowed of server capacity
-     * @param revertToKick
-     *            in event of reaching cap over cap, should full fall back on
-     *            kicking?
-     * @param kickMessage
-     *            message to send player when kicked to make room
-     * @param fullMessage
-     *            message to send player who can't join full server
-     * @param plugin
-     *            plugin using the listener
+     *
+     * @param reserveMethod method to use for reserve slots
+     * @param capOver       capacity allowed of server capacity
+     * @param revertToKick  in event of reaching cap over cap, should full fall back on kicking?
+     * @param kickMessage   message to send player when kicked to make room
+     * @param fullMessage   message to send player who can't join full server
+     * @param plugin        plugin using the listener
      */
     public SimpleReserveListener(ReserveType reserveMethod, int capOver, boolean revertToKick, String kickMessage,
-            String fullMessage, String reserveFullMessage, SimpleReserve plugin)
+                                 String fullMessage, String reserveFullMessage, SimpleReserve plugin)
     {
         setSettings(reserveMethod, capOver, revertToKick, kickMessage, fullMessage, reserveFullMessage);
         this.plugin = plugin;
@@ -53,27 +45,21 @@ public class SimpleReserveListener implements Listener
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
         plugin.getLogger().finer(
-                "Created SimpleReserveListener with kickMessage: \"" + kickMessage + "\" and fullMessage: \""
-                        + fullMessage + "\"");
+                String.format("Created SimpleReserveListener with kickMessage: \"%s\" and fullMessage: \"%s\"",
+                        kickMessage, fullMessage));
     }
 
     /**
      * Set reserve listener settings
-     * 
-     * @param reserveMethod
-     *            method to use for reserve slots
-     * @param capOver
-     *            capacity allowed of server capacity
-     * @param revertToKick
-     *            in event of reaching cap over cap, should full fall back on
-     *            kicking?
-     * @param kickMessage
-     *            message to send player when kicked to make room
-     * @param fullMessage
-     *            message to send player who can't join full server
+     *
+     * @param reserveMethod method to use for reserve slots
+     * @param capOver       capacity allowed of server capacity
+     * @param revertToKick  in event of reaching cap over cap, should full fall back on kicking?
+     * @param kickMessage   message to send player when kicked to make room
+     * @param fullMessage   message to send player who can't join full server
      */
     public void setSettings(ReserveType reserveMethod, int capOver, boolean revertToKick, String kickMessage,
-            String fullMessage, String reserveFullMessage)
+                            String fullMessage, String reserveFullMessage)
     {
         this.reserveMethod = reserveMethod;
         this.capOver = capOver;
@@ -85,9 +71,8 @@ public class SimpleReserveListener implements Listener
 
     /**
      * If server is full, let event through if player has not been denied yet
-     * 
-     * @param event
-     *            the login event
+     *
+     * @param event the login event
      */
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerLogin(PlayerLoginEvent event)
@@ -96,20 +81,28 @@ public class SimpleReserveListener implements Listener
         if (event.getResult() == Result.KICK_FULL)
         {
             Player player = event.getPlayer(); // player doing event
-            
+
             // full entry
             if ((reserveMethod == ReserveType.BOTH || reserveMethod == ReserveType.FULL)
                     && player.hasPermission("simplereserve.enter.full"))
             {
+                // allow player in as long as the server hasn't hit the max over cap
                 if (!serverTooFull())
                 {
                     event.allow();
                     plugin.getLogger().info(
                             "Allowed player " + event.getPlayer().getDisplayName() + " to join full server!");
                 }
+                // server's too full to let more in, attempt to kick someone to make room
                 else if (revertToKick)
+                {
                     kickJoin(player, event);
-                else event.disallow(Result.KICK_FULL, reserveFullMessage);
+                }
+                // server's too full and fallback kick is disabled
+                else
+                {
+                    event.disallow(Result.KICK_FULL, reserveFullMessage);
+                }
             }
             // kick entry
             else if ((reserveMethod == ReserveType.BOTH || reserveMethod == ReserveType.KICK)
@@ -127,30 +120,29 @@ public class SimpleReserveListener implements Listener
 
     /**
      * Perform a join via kick method
-     * 
-     * @param player
-     *            player logging in
-     * @param event
-     *            login event
+     *
+     * @param player player logging in
+     * @param event  login event
      */
     private void kickJoin(Player player, PlayerLoginEvent event)
     {
-        for (Player p : plugin.getServer().getOnlinePlayers())
-        {
-            // player does not have kick prevent power
-            if (!p.hasPermission("simplereserve.kick.prevent"))
-            {
-                p.kickPlayer(kickMessage);
-                event.allow();
-                plugin.getLogger().info(
-                        "Allowed player " + player.getDisplayName() + " to join full server by kicking player "
-                                + p.getDisplayName() + "!");
-                return; // found and kicked a player, let the reserved player join, exit loop
-            }
-        }
+        Player toKick = plugin.getServer().getOnlinePlayers().stream()
+                .filter(p -> !p.hasPermission("simplereserve.kick.prevent")).findFirst().orElse(null);
 
-        // if we get here, no kickable player found...that would be unfortunate.
-        event.disallow(Result.KICK_FULL, "Unable to find any kickable players to open spots!");
+        // found player to kick
+        if (toKick != null)
+        {
+            toKick.kickPlayer(kickMessage);
+            event.allow();
+            plugin.getLogger().info(
+                    "Allowed player " + player.getDisplayName() + " to join full server by kicking player "
+                            + toKick.getDisplayName() + "!");
+        }
+        else
+        {
+            // if we get here, no kickable player found...that would be unfortunate.
+            event.disallow(Result.KICK_FULL, "Unable to find any kickable players to open spots!");
+        }
     }
 
     /**

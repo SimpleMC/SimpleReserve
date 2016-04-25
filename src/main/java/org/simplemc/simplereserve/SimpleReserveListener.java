@@ -7,8 +7,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
 
-import java.util.Collection;
-
 /**
  * Listener for simple reserve plugin to handle logins
  *
@@ -134,9 +132,10 @@ public class SimpleReserveListener implements Listener
         {
             toKick.kickPlayer(kickMessage);
             event.allow();
+
             plugin.getLogger().info(
-                    "Allowed player " + player.getDisplayName() + " to join full server by kicking player "
-                            + toKick.getDisplayName() + "!");
+                    String.format("Allowed player %s to join full server by kicking player %s!",
+                            player.getDisplayName(), toKick.getDisplayName()));
         }
         else
         {

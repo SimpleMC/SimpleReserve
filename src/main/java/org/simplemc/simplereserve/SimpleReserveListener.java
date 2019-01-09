@@ -40,11 +40,18 @@ public class SimpleReserveListener implements Listener
         this.plugin = plugin;
 
         // register events
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        if (reserveMethod == ReserveType.NONE)
+        {
+            plugin.getLogger().finer("ReserveType is NONE, not registering events");
+        }
+        else
+        {
+            plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
-        plugin.getLogger().finer(
-                String.format("Created SimpleReserveListener with kickMessage: \"%s\" and fullMessage: \"%s\"",
-                        kickMessage, fullMessage));
+            plugin.getLogger().finer(
+                    String.format("Created SimpleReserveListener with kickMessage: \"%s\" and fullMessage: \"%s\"",
+                            kickMessage, fullMessage));
+        }
     }
 
     /**

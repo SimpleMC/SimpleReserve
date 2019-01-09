@@ -169,9 +169,9 @@ public class SimpleReserve extends JavaPlugin
                     "    full,kick,both,none\n" +
                     "reserve.full.cap(int): Max players allowed over capacity if using 'full' method, 0 for no max\n" +
                     "reserve.full.reverttokick(boolean): Should we fall back to kick method if we reach max over capacity using full?\n" +
-                    "kick-message(string): Message player will recieve when kicked to let reserve in\n" +
-                    "full-message(string): Message player will recieve when unable to join full server\n" +
-                    "reserve-full-message(string): Message player with reserve privileges will recieve when all reserve slots are full\n" +
+                    "kick-message(string): Message player will receive when kicked to let reserve in\n" +
+                    "full-message(string): Message player will receive when unable to join full server\n" +
+                    "reserve-full-message(string): Message player with reserve privileges will receive when all reserve slots are full\n" +
                     "\n" +
                     "Reserve Types Overview:\n" +
                     "-----------------------\n" +

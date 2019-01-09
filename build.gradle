@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'org.simplemc'
-version '1.9.1'
+version '1.13-SNAPSHOT'
 
 // target Java 8
 sourceCompatibility = 1.8

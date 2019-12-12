@@ -1,6 +1,7 @@
 name: SimpleReserve
 main: org.simplemc.simplereserve.SimpleReserve
-version: 1.13.0
+version: 1.15.0
+api-version: "1.15"
 website: http://dev.bukkit.org/server-mods/simplereserve/
 author: Taylor Becker
 permissions:

@@ -1,6 +1,6 @@
 name: SimpleReserve
 main: org.simplemc.simplereserve.SimpleReserve
-version: 0.1.0
+version: 1.0.0
 api-version: "1.15"
 website: https://github.com/SimpleMC/SimpleReserve
 author: tajobe

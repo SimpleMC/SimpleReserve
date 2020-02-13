@@ -1,9 +1,9 @@
 name: SimpleReserve
 main: org.simplemc.simplereserve.SimpleReserve
-version: 1.15.0
+version: 0.1.0
 api-version: "1.15"
-website: http://dev.bukkit.org/server-mods/simplereserve/
-author: Taylor Becker
+website: https://github.com/SimpleMC/SimpleReserve
+author: tajobe
 permissions:
     simplereserve:
         description: Gives access to SimpleReserve help command

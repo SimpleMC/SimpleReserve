@@ -71,8 +71,8 @@ scmVersion {
 fun currentDateString() = OffsetDateTime.now(ZoneOffset.UTC).toLocalDate().format(DateTimeFormatter.ISO_DATE)
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 repositories {
@@ -86,6 +86,6 @@ dependencies {
 }
 
 tasks.wrapper {
-    gradleVersion = "6.1.1"
+    gradleVersion = "6.5"
     distributionType = Wrapper.DistributionType.ALL
 }

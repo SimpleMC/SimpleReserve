@@ -1,4 +1,4 @@
-name: KotlinPluginTemplate
+name: SimpleReserve
 main: org.simplemc.simplereserve.SimpleReserve
 version: "${version}"
 api-version: "${apiVersion}"

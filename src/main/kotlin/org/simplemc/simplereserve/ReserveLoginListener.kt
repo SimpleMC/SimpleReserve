@@ -7,6 +7,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerLoginEvent
+import org.bukkit.event.player.PlayerLoginEvent.Result.KICK_FULL
 import org.bukkit.plugin.Plugin
 import org.simplemc.simplereserve.ReserveConfig.ReserveMethod
 
@@ -27,25 +28,24 @@ class ReserveLoginListener(private val plugin: Plugin, private val config: Reser
      * @param event the login event
      */
     @EventHandler(priority = EventPriority.HIGH)
-    fun onPlayerLogin(event: PlayerLoginEvent?) {
-        if (event?.result != PlayerLoginEvent.Result.KICK_FULL) return
+    fun onPlayerLogin(event: PlayerLoginEvent) {
+        plugin.logger.info { config.full.kickFallback.toString() }
+        if (event.result != KICK_FULL) return
+
+        val allowFull = config.method.fullEnabled && event.player.hasPermission("simplereserve.enter.full")
+        val canEnterFull = allowFull && plugin.server.hasOverCapacity
+        val allowKick =
+            (config.method.kickEnabled && event.player.hasPermission("simplereserve.enter.kick")) || (allowFull && config.full.kickFallback)
 
         when {
-            config.method.fullEnabled && event.player.hasPermission("simplereserve.enter.full") -> {
-                when {
-                    // allow player in as long as the server hasn't hit the max over capacity
-                    plugin.server.hasOverCapacity -> {
-                        event.allow()
-                        plugin.logger.info { "Allowed player ${event.player.displayName} to join full server!" }
-                    }
-                    // capacity reached, try kicking
-                    config.full.kickFallback -> kickJoin(event.player, event)
-                    else -> event.disallow(PlayerLoginEvent.Result.KICK_FULL, config.full.overCapacityMessage)
-                }
+            canEnterFull -> {
+                event.allow()
+                plugin.logger.info { "Allowed player ${event.player.displayName} to join full server!" }
             }
-            config.method.kickEnabled && event.player.hasPermission("simplereserve.enter.kick") ->
-                kickJoin(event.player, event)
-            else -> event.disallow(PlayerLoginEvent.Result.KICK_FULL, config.serverFullMessage)
+
+            allowFull && !allowKick -> event.disallow(KICK_FULL, config.full.overCapacityMessage)
+            allowKick -> kickJoin(event.player, event)
+            else -> event.disallow(KICK_FULL, config.serverFullMessage)
         }
     }
 
@@ -63,7 +63,7 @@ class ReserveLoginListener(private val plugin: Plugin, private val config: Reser
             plugin.logger.info {
                 "Allowed player ${player.displayName} to join full server by kicking player ${toKick.displayName}!"
             }
-        } ?: event.disallow(PlayerLoginEvent.Result.KICK_FULL, "Unable to find any kickable players to make room!")
+        } ?: event.disallow(KICK_FULL, "Unable to find any kickable players to make room!")
     }
 
     // if server has overcapacity available according to reserve capacity

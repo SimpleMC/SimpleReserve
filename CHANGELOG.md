@@ -14,6 +14,7 @@
 
 ### Fixed
 - Close listeners on reload
+- `KICK` method will now function for players with both kick and full permissions and `BOTH` reserve method
 
 ## [1.0.1] - 2020-06-28
 ### Changed

@@ -150,9 +150,6 @@ class SimpleReserve : JavaPlugin() {
         }
     }
 
-    /**
-     * Plugin disabled
-     */
     override fun onDisable() {
         listener.close()
         println("SimpleReserve disabled!")

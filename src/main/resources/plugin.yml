@@ -1,39 +1,37 @@
 name: SimpleReserve
 main: org.simplemc.simplereserve.SimpleReserve
-version: 1.0.1
-api-version: "1.15"
+version: "${version}"
+api-version: "${apiVersion}"
 website: https://github.com/SimpleMC/SimpleReserve
 author: tajobe
 permissions:
-    simplereserve:
-        description: Gives access to SimpleReserve help command
-    simplereserve.*:
-        description: All SimpleReserve permissions
-        children:
-            simplereserve.enter: true
-            simplereserve.kick.prevent: true
-            simplereserve.reload: true
-    simplereserve.enter:
-        description: Enter full and kick permissions
-        children:
-            simplereserve.enter.full: true
-            simplereserve.enter.kick: true
-    simplereserve.enter.full:
-        description: User may join past server player cap
-    simplereserve.enter.kick:
-        description: User may join full server by kicking another player
-    simplereserve.kick.prevent:
-        description: User cannot be kicked to make room for a joining player
-    simplereserve.reload:
-        description: Gives access to SimpleReserve reload command
-        children:
-            simplereserve: true
+  simplereserve.*:
+    description: All SimpleReserve permissions
+    children:
+      simplereserve.enter: true
+      simplereserve.kick.prevent: true
+      simplereserve.reload: true
+  simplereserve.enter:
+    description: Enter full and kick permissions
+    children:
+      simplereserve.enter.full: true
+      simplereserve.enter.kick: true
+  simplereserve.enter.full:
+    description: User may join past server player cap
+  simplereserve.enter.kick:
+    description: User may join full server by kicking another player
+  simplereserve.kick.prevent:
+    description: User cannot be kicked to make room for a joining player
+  simplereserve.reload:
+    description: Gives access to SimpleReserve reload command
 commands:
-    simplereserve:
-        aliases:
-            - sr
-        description: SimpleReserve command for help or config reload
-        usage: |
-            /<command> | Displays SimpleReserve help
-            /<command> r | Reloads SimpleReserve config
-            /<command> reload | Reloads SimpleReserve config
+  simplereservereload:
+    aliases:
+      - srr
+      - srreload
+      - srconfig
+    permission: simplereserve.reload
+    description: SimpleReserve command for help or config reload
+    usage: /<command> | Reloads SimpleReserve config
+libraries:
+  - org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}

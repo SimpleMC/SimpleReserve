@@ -1,6 +1,20 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- MIT license
+
+### Changed
+- Rewrote plugin in Kotlin
+- MC 1.21, Java 21, Kotlin 2.1
+- **BREAKING**: New config format
+
+### Removed
+- Help command (duplicated built-in usage functionality)
+
+### Fixed
+- Close listeners on reload
+- `KICK` method will now function for players with both kick and full permissions and `BOTH` reserve method
 
 ## [1.0.1] - 2020-06-28
 ### Changed
@@ -13,8 +27,7 @@
 - Github Actions for build and automated releases
 
 ### Changed
-- Adopt semver
-  - axion-release plugin
+- Adopt semver via axion-release plugin
 - Target MC version 1.15
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
